@@ -1,0 +1,44 @@
+name: 毎朝セキュリティ記事生成
+
+on:
+  schedule:
+    - cron: '0 23 * * *'  # JST 8:00 = UTC 23:00（前日）
+  workflow_dispatch:
+    inputs:
+      override_topic:
+        description: 'テーマを手動指定（空欄で自動選択）'
+        required: false
+        default: ''
+
+jobs:
+  generate-article:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: リポジトリのチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 依存パッケージのインストール
+        run: pip install google-genai
+
+      - name: 記事生成
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OVERRIDE_TOPIC: ${{ github.event.inputs.override_topic }}
+        run: python generate_article.py
+
+      - name: 記事ファイルをコミット
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add articles/ logs/
+          git diff --staged --quiet || git commit -m "📝 $(date +'%Y-%m-%d') セキュリティ解説記事を自動生成"
+          git push
