@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """
-情報処理安全確保支援士向け セキュリティ解説記事 自動生成スクリプト
-毎朝8時にGitHub Actionsから実行される（Gemini API使用・無料）
+情報処理安全確保支援士向け セキュリティ解説記事 自動生成
+Gemini REST API 直接呼び出し版
 """
 
-import google.genai as genai
+import urllib.request
+import urllib.error
+import json
 import datetime
 import os
-import json
 import sys
 
-# ==========================================
-# テーマリスト（35日分・自動循環）
-# ==========================================
 TOPICS = [
     "PKIと電子証明書：信頼の連鎖とX.509の仕組み",
     "TLS1.3ハンドシェイクの詳細フローと前方秘匿性",
@@ -51,39 +49,22 @@ TOPICS = [
     "IoTセキュリティのリスクと対策フレームワーク",
 ]
 
-SYSTEM_PROMPT = """あなたは情報処理安全確保支援士（登録セキスペ）の試験対策と実務に精通した
-セキュリティエンジニアです。
+PROMPT_TEMPLATE = """あなたは情報処理安全確保支援士（登録セキスペ）の試験対策と実務に精通したセキュリティエンジニアです。
 
-以下の条件で記事を作成してください：
+以下のテーマでnote投稿用の解説記事を作成してください。
 
-【対象読者】
-- 情報処理安全確保支援士の取得を目指している方
-- ITエンジニア・セキュリティ担当者
+テーマ：{topic}
 
-【記事の条件】
-- 文字数：2500文字程度（±200文字）
-- note投稿を想定した読みやすい文体
-- 技術的に正確で深い内容
-- 試験に出るポイントを明示する
-- 実務での応用も含める
-
-【構成】
-1. タイトル（#）
-2. はじめに（200文字程度）
-3. 基本概念（##）
-4. 技術的な深堀り（##）
-5. 攻撃・脆弱性の観点（##）
-6. 対策・ベストプラクティス（##）
-7. 📝 試験対策ポイント（##）
-8. まとめ（##）
-
-【ルール】
-- 専門用語には初出時に英語表記を添える
+【条件】
+- 文字数：2500文字程度
+- 対象：情報処理安全確保支援士の取得を目指す方
+- 構成：はじめに／基本概念／技術的な深堀り／攻撃・脆弱性の観点／対策・ベストプラクティス／📝試験対策ポイント／まとめ
+- 専門用語は初出時に英語表記を併記
 - RFC番号・NIST文書番号など具体的な規格番号を使う
 - 「試験ではここが出る！」という視点を随所に入れる"""
 
 
-def get_today_topic() -> str:
+def get_today_topic():
     override = os.environ.get("OVERRIDE_TOPIC", "").strip()
     if override:
         return override
@@ -91,40 +72,84 @@ def get_today_topic() -> str:
     return TOPICS[(day_of_year - 1) % len(TOPICS)]
 
 
-def generate_article(topic: str) -> str:
-    api_key = os.environ.get("GEMINI_API_KEY")
+def generate_article(topic):
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not api_key:
         raise ValueError("GEMINI_API_KEY が設定されていません")
 
-    client = genai.Client(api_key=api_key)
+    print(f"[API] キー形式: {api_key[:10]}...")
 
-    prompt = f"{SYSTEM_PROMPT}\n\n以下のテーマで記事を作成してください：\n\n{topic}"
+    prompt = PROMPT_TEMPLATE.format(topic=topic)
 
-    print(f"[API] Gemini APIに記事生成をリクエスト中...")
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
-    )
-    return response.text
+    # REST API直接呼び出し（ライブラリ不要）
+    # AQ.形式キーはBearer認証で試す
+    endpoints = [
+        # パターン1: クエリパラメータ
+        {
+            "url": f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
+            "headers": {"Content-Type": "application/json"},
+        },
+        # パターン2: Bearerトークン
+        {
+            "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}",
+            },
+        },
+        # パターン3: X-goog-api-key ヘッダー
+        {
+            "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+            "headers": {
+                "Content-Type": "application/json",
+                "X-goog-api-key": api_key,
+            },
+        },
+    ]
+
+    body = json.dumps({
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 4096, "temperature": 0.7}
+    }).encode()
+
+    last_error = None
+    for i, ep in enumerate(endpoints, 1):
+        print(f"[API] 試行 {i}/3: {ep['url'][:60]}...")
+        try:
+            req = urllib.request.Request(
+                ep["url"], data=body, method="POST", headers=ep["headers"]
+            )
+            with urllib.request.urlopen(req, timeout=60) as res:
+                result = json.loads(res.read())
+                text = result["candidates"][0]["content"]["parts"][0]["text"]
+                print(f"[API] ✅ パターン{i}で成功！")
+                return text
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode()
+            print(f"[API] パターン{i} HTTPエラー {e.code}: {err_body[:100]}")
+            last_error = err_body
+        except Exception as e:
+            print(f"[API] パターン{i} エラー: {e}")
+            last_error = str(e)
+
+    raise RuntimeError(f"全パターン失敗。最後のエラー: {last_error}")
 
 
-def save_article(content: str, topic: str) -> str:
+def save_article(content, topic):
     today = datetime.date.today().strftime("%Y-%m-%d")
     safe_topic = topic[:20].replace("/", "・").replace(" ", "_")
     filename = f"articles/{today}_{safe_topic}.md"
     os.makedirs("articles", exist_ok=True)
-
     header = f"---\ndate: {today}\ntopic: {topic}\ngenerated_at: {datetime.datetime.now().isoformat()}\n---\n\n"
     with open(filename, "w", encoding="utf-8") as f:
         f.write(header + content)
     return filename
 
 
-def save_log(topic: str, filename: str, success: bool, error: str = ""):
+def save_log(topic, filename, success, error=""):
     os.makedirs("logs", exist_ok=True)
     log = {
         "timestamp": datetime.datetime.now().isoformat(),
-        "date": datetime.date.today().isoformat(),
         "topic": topic,
         "output_file": filename,
         "success": success,
@@ -136,8 +161,8 @@ def save_log(topic: str, filename: str, success: bool, error: str = ""):
 
 def main():
     print("=" * 60)
-    print("🔐 セキュリティ解説記事 自動生成システム（Gemini版）")
-    print(f"📅 実行日時: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("🔐 セキュリティ解説記事 自動生成システム")
+    print(f"📅 {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
 
     topic = get_today_topic()
@@ -145,26 +170,18 @@ def main():
 
     try:
         article = generate_article(topic)
-        print(f"✅ 記事生成完了（{len(article)}文字）")
+        print(f"✅ 生成完了（{len(article)}文字）")
     except Exception as e:
-        print(f"[ERROR] 記事生成失敗: {e}")
+        print(f"[ERROR] {e}")
         save_log(topic, "", False, str(e))
         sys.exit(1)
 
-    try:
-        filename = save_article(article, topic)
-        print(f"💾 ファイル保存: {filename}")
-    except Exception as e:
-        print(f"[ERROR] ファイル保存失敗: {e}")
-        save_log(topic, "", False, str(e))
-        sys.exit(1)
-
+    filename = save_article(article, topic)
+    print(f"💾 保存: {filename}")
     save_log(topic, filename, True)
 
-    print("\n" + "=" * 60)
-    print("📄 記事プレビュー（先頭300文字）")
-    print("=" * 60)
-    print(article[:300] + "...")
+    print("\n📄 プレビュー（先頭200文字）")
+    print(article[:200] + "...")
     print("\n✨ 完了！")
 
 
