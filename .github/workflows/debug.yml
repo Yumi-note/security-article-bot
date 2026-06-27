@@ -16,20 +16,28 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: デバッグ実行（エラーをファイルに保存）
+      - name: キー確認＆API直接テスト
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python generate_article.py > logs/debug_output.txt 2>&1 || true
-          echo "--- キー確認 ---" >> logs/debug_output.txt
-          echo "キー先頭10文字: ${GEMINI_API_KEY:0:10}" >> logs/debug_output.txt
-          cat logs/debug_output.txt
-
-      - name: ログをコミット
-        run: |
-          mkdir -p logs
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Actions Bot"
-          git add logs/
-          git diff --staged --quiet || git commit -m "🐛 デバッグログ"
-          git push
+          echo "=== キー形式確認 ==="
+          echo "先頭15文字: ${GEMINI_API_KEY:0:15}..."
+          echo "キー長: ${#GEMINI_API_KEY}"
+          
+          echo ""
+          echo "=== Gemini REST API テスト ==="
+          curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-goog-api-key: ${GEMINI_API_KEY}" \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" \
+            -d '{"contents":[{"parts":[{"text":"Hi"}]}]}' | head -c 500
+          
+          echo ""
+          echo "=== Bearer認証テスト ==="
+          curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${GEMINI_API_KEY}" \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" \
+            -d '{"contents":[{"parts":[{"text":"Hi"}]}]}' | head -c 500
