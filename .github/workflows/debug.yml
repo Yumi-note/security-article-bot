@@ -1,0 +1,35 @@
+name: デバッグ：エラー確認用
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: デバッグ実行（エラーをファイルに保存）
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python generate_article.py > logs/debug_output.txt 2>&1 || true
+          echo "--- キー確認 ---" >> logs/debug_output.txt
+          echo "キー先頭10文字: ${GEMINI_API_KEY:0:10}" >> logs/debug_output.txt
+          cat logs/debug_output.txt
+
+      - name: ログをコミット
+        run: |
+          mkdir -p logs
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add logs/
+          git diff --staged --quiet || git commit -m "🐛 デバッグログ"
+          git push
