@@ -2,7 +2,7 @@ name: 毎朝セキュリティ記事生成
 
 on:
   schedule:
-    - cron: '0 23 * * *'  # JST 8:00 = UTC 23:00（前日）
+    - cron: '0 23 * * *'
   workflow_dispatch:
     inputs:
       override_topic:
@@ -24,10 +24,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
-
-      - name: 依存パッケージのインストール
-        run: pip install google-genai
 
       - name: 記事生成
         env:
