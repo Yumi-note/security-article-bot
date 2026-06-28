@@ -6,6 +6,8 @@ on:
 jobs:
   debug:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -14,7 +16,15 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Pythonで直接APIテスト
+      - name: Pythonで直接APIテスト（結果をファイルに保存）
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python3 debug_api_test.py
+        run: python3 debug_api_test.py 2>&1 | tee debug_result.txt
+
+      - name: 結果をコミット
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add debug_result.txt
+          git commit -m "🐛 デバッグ結果"
+          git push
