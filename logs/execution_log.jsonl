@@ -3,3 +3,4 @@
 {"timestamp": "2026-06-28T11:08:27.711108", "topic": "SQLインジェクションの仕組みと完全な対策", "file": "articles/2026-06-28_SQLインジェクションの仕組み.md", "chars": 4862, "model": "deepseek-r1"}
 {"timestamp": "2026-06-28T13:24:07.379256", "topic": "SQLインジェクションの仕組みと完全な対策", "file": "articles/2026-06-28_SQLインジェクションの仕組み.md", "chars": 3510, "model": "deepseek-r1"}
 {"timestamp": "2026-06-28T13:57:10.483693", "date": "2026-06-28", "topic": "ゼロトラストネットワークアーキテクチャの設計原則", "file": "articles/2026-06-28_ゼロトラストネットワークアーキ.md", "chars": 4938, "model": "deepseek-r1", "success": true}
+{"timestamp": "2026-06-28T14:45:46.798237", "date": "2026-06-28", "topic": "ランサムウェアの動作原理と感染経路・復旧手順", "file": "articles/2026-06-28_ランサムウェアの動作原理と感染.md", "chars": 3621, "model": "deepseek-r1", "success": true}
