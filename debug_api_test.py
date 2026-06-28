@@ -1,21 +1,24 @@
 import urllib.request, urllib.error, json, os
 
-api_key = os.environ.get("GEMINI_API_KEY", "")
-print(f"KEY_PREFIX: {api_key[:15]}")
+api_key = os.environ.get("GROQ_API_KEY", "")
+print(f"KEY_PREFIX: {api_key[:10]}")
 print(f"KEY_LENGTH: {len(api_key)}")
 
-url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-body = json.dumps({"contents": [{"parts": [{"text": "Hi"}]}]}).encode()
+url = "https://api.groq.com/openai/v1/chat/completions"
+body = json.dumps({
+    "model": "llama-3.3-70b-versatile",
+    "messages": [{"role": "user", "content": "Hi, say hello in one word"}],
+    "max_tokens": 10
+}).encode()
 
 req = urllib.request.Request(url, data=body, method="POST", headers={
     "Content-Type": "application/json",
-    "X-goog-api-key": api_key,
+    "Authorization": f"Bearer {api_key}",
 })
-
 try:
     with urllib.request.urlopen(req, timeout=30) as res:
         result = json.loads(res.read())
-        print("API_SUCCESS:", result["candidates"][0]["content"]["parts"][0]["text"])
+        print("API_SUCCESS:", result["choices"][0]["message"]["content"])
 except urllib.error.HTTPError as e:
     print(f"API_HTTP_ERROR_{e.code}: {e.read().decode()[:500]}")
 except Exception as e:
