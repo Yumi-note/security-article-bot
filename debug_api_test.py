@@ -2,12 +2,10 @@ import urllib.request, urllib.error, json, os
 
 api_key = os.environ.get("OPENROUTER_API_KEY", "")
 
-# DeepSeekのモデル候補を試す
 models = [
-    "deepseek/deepseek-r1:free",
-    "deepseek/deepseek-chat:free",
-    "deepseek/deepseek-r1-distill-llama-70b:free",
-    "deepseek/deepseek-r1-distill-qwen-32b:free",
+    "deepseek/deepseek-r1",
+    "deepseek/deepseek-chat",
+    "deepseek/deepseek-r1-distill-llama-70b",
 ]
 
 url = "https://openrouter.ai/api/v1/chat/completions"
@@ -30,6 +28,6 @@ for model in models:
             print(f"SUCCESS: {result['choices'][0]['message']['content']}")
             break
     except urllib.error.HTTPError as e:
-        print(f"HTTP_{e.code}: {e.read().decode()[:150]}")
+        print(f"HTTP_{e.code}: {e.read().decode()[:200]}")
     except Exception as e:
         print(f"ERROR: {e}")
