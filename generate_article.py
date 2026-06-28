@@ -41,7 +41,7 @@ TOPICS = [
 ]
 
 PROMPT = """あなたは情報処理安全確保支援士の試験対策に精通したセキュリティエンジニアです。
-以下のテーマでnote投稿用の解説記事を2500文字程度で作成してください。
+以下のテーマでnote投稿用の解説記事を2500文字程度で日本語で作成してください。
 
 テーマ：{topic}
 
@@ -66,18 +66,19 @@ def get_topic():
     return TOPICS[(day - 1) % len(TOPICS)]
 
 
-def call_groq(api_key, prompt):
-    url = "https://api.groq.com/openai/v1/chat/completions"
+def call_openrouter(api_key, prompt):
+    url = "https://openrouter.ai/api/v1/chat/completions"
     body = json.dumps({
-        "model": "llama-3.3-70b-versatile",
+        "model": "meta-llama/llama-3.1-8b-instruct:free",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 4096,
-        "temperature": 0.7
     }).encode("utf-8")
 
     req = urllib.request.Request(url, data=body, method="POST", headers={
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}",
+        "HTTP-Referer": "https://github.com/Yumi-note/security-article-bot",
+        "X-Title": "Security Article Bot",
     })
     try:
         with urllib.request.urlopen(req, timeout=120) as res:
@@ -91,24 +92,24 @@ def call_groq(api_key, prompt):
 
 def main():
     print("=" * 50)
-    print("🔐 セキュリティ記事 自動生成（Groq版）")
+    print("🔐 セキュリティ記事 自動生成（OpenRouter版）")
     print(f"📅 {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 50)
 
-    api_key = os.environ.get("GROQ_API_KEY", "").strip()
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if not api_key:
-        print("[ERROR] GROQ_API_KEY が未設定")
+        print("[ERROR] OPENROUTER_API_KEY が未設定")
         sys.exit(1)
 
-    print(f"[INFO] APIキー確認: {api_key[:10]}...")
+    print(f"[INFO] APIキー: {api_key[:15]}...")
     topic = get_topic()
     print(f"[INFO] テーマ: {topic}")
 
     prompt = PROMPT.format(topic=topic)
-    print("[API] Groq API呼び出し中...")
+    print("[API] OpenRouter API呼び出し中...")
 
     try:
-        article = call_groq(api_key, prompt)
+        article = call_openrouter(api_key, prompt)
     except Exception as e:
         print(f"[FATAL] 記事生成失敗: {e}")
         sys.exit(1)
@@ -129,7 +130,7 @@ def main():
         f.write(json.dumps(log, ensure_ascii=False) + "\n")
 
     print(f"[SAVED] {fname}")
-    print("\n📄 プレビュー:")
+    print("\n📄 プレビュー（先頭300文字）:")
     print(article[:300] + "...")
     print("\n✨ 完了！")
 
