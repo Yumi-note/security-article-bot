@@ -16,9 +16,9 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Pythonで直接APIテスト（結果をファイルに保存）
+      - name: Groq APIテスト
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: python3 debug_api_test.py 2>&1 | tee debug_result.txt
 
       - name: 結果をコミット
@@ -26,5 +26,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Actions Bot"
           git add debug_result.txt
-          git commit -m "🐛 デバッグ結果"
+          git commit -m "🐛 Groqデバッグ結果"
           git push
