@@ -27,7 +27,7 @@ jobs:
 
       - name: 記事生成
         env:
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OVERRIDE_TOPIC: ${{ github.event.inputs.override_topic }}
         run: python generate_article.py
 
