@@ -1,8 +1,5 @@
---- deepseek/deepseek-r1:free ---
-HTTP_404: {"error":{"message":"This model is unavailable for free. The paid version is available now - use this slug instead: deepseek/deepseek-r1","code":404},
---- deepseek/deepseek-chat:free ---
-HTTP_404: {"error":{"message":"This model is unavailable for free. The paid version is available now - use this slug instead: deepseek/deepseek-chat","code":404
---- deepseek/deepseek-r1-distill-llama-70b:free ---
-HTTP_404: {"error":{"message":"This model is unavailable for free. The paid version is available now - use this slug instead: deepseek/deepseek-r1-distill-llama
---- deepseek/deepseek-r1-distill-qwen-32b:free ---
-HTTP_404: {"error":{"message":"No endpoints found for deepseek/deepseek-r1-distill-qwen-32b:free.","code":404},"user_id":"user_3FkxZ8Bbe1RLt8lN9JopLafNGQU"}
+--- deepseek/deepseek-r1 ---
+SUCCESS: こんにちは！😊
+
+日本語の挨拶について少し補足しますね：
+- **「こんにちは
