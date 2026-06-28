@@ -1,4 +1,2 @@
-KEY_PREFIX: gsk_VkEuXZ
-KEY_LENGTH: 56
-API_HTTP_ERROR_403: error code: 1010
-
+KEY_PREFIX: sk-or-v1-2b0757
+HTTP_ERROR_404: {"error":{"message":"This model is unavailable for free. The paid version is available now - use this slug instead: meta-llama/llama-3.1-8b-instruct","code":404},"user_id":"user_3FkxZ8Bbe1RLt8lN9JopLafNGQU"}
