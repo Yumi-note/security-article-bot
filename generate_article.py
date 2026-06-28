@@ -94,7 +94,7 @@ def get_topic():
 def call_api(api_key, prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     body = json.dumps({
-        "model": "deepseek/deepseek-r1:free",
+        "model": "deepseek/deepseek-r1",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 4096,
     }).encode("utf-8")
