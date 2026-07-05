@@ -15,15 +15,15 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 本番スクリプトをデバッグ実行
+      - name: モデルテスト実行
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: python3 generate_article.py 2>&1 | tee debug_result.txt || true
+        run: python3 debug_api_test.py 2>&1 | tee debug_result.txt
 
       - name: 結果をコミット
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Actions Bot"
           git add debug_result.txt
-          git commit -m "🐛 デバッグ結果" || true
+          git commit -m "🐛 モデルテスト結果" || true
           git push || true
