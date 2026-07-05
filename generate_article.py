@@ -143,7 +143,7 @@ def get_topic():
 def call_api(api_key, prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     body = json.dumps({
-        "model": "meta-llama/llama-3.3-70b-versatile",
+        "model": "meta-llama/llama-3.1-70b-instruct",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 6000,
     }).encode("utf-8")
@@ -161,7 +161,7 @@ def call_api(api_key, prompt):
 
 def main():
     print("=" * 50)
-    print("🔐 セキュリティ記事 自動生成（LLaMA 3.3 70B・3500文字版）")
+    print("🔐 セキュリティ記事 自動生成（LLaMA 3.1 70B・3500文字版）")
     print(f"📅 {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 50)
 
@@ -174,7 +174,7 @@ def main():
     print(f"[INFO] テーマ: {topic}")
 
     try:
-        print("[API] LLaMA 3.3 70B 呼び出し中...")
+        print("[API] LLaMA 3.1 70B 呼び出し中...")
         article = call_api(api_key, PROMPT.format(topic=topic))
     except Exception as e:
         print(f"[FATAL] {e}")
@@ -189,7 +189,7 @@ def main():
 
     fname = f"articles/{today}_{safe}.md"
     with open(fname, "w", encoding="utf-8") as f:
-        f.write(f"---\ndate: {today}\ntopic: {topic}\nmodel: llama-3.3-70b\n---\n\n" + article)
+        f.write(f"---\ndate: {today}\ntopic: {topic}\nmodel: llama-3.1-70b\n---\n\n" + article)
 
     log = {
         "timestamp": datetime.datetime.now().isoformat(),
@@ -197,7 +197,7 @@ def main():
         "topic": topic,
         "file": fname,
         "chars": len(article),
-        "model": "llama-3.3-70b",
+        "model": "llama-3.1-70b",
         "success": True
     }
     with open("logs/execution_log.jsonl", "a", encoding="utf-8") as f:
