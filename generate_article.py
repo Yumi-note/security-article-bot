@@ -143,7 +143,7 @@ def get_topic():
 def call_api(api_key, prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     body = json.dumps({
-        "model": "deepseek/deepseek-r1",
+        "model": "meta-llama/llama-3.3-70b-versatile",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 6000,
     }).encode("utf-8")
@@ -154,14 +154,14 @@ def call_api(api_key, prompt):
         "HTTP-Referer": "https://github.com/Yumi-note/security-article-bot",
         "X-Title": "Security Article Bot",
     })
-    with urllib.request.urlopen(req, timeout=240) as res:
+    with urllib.request.urlopen(req, timeout=120) as res:
         result = json.loads(res.read().decode("utf-8"))
         return result["choices"][0]["message"]["content"]
 
 
 def main():
     print("=" * 50)
-    print("🔐 セキュリティ記事 自動生成（DeepSeek R1・3500文字版）")
+    print("🔐 セキュリティ記事 自動生成（LLaMA 3.3 70B・3500文字版）")
     print(f"📅 {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 50)
 
@@ -174,7 +174,7 @@ def main():
     print(f"[INFO] テーマ: {topic}")
 
     try:
-        print("[API] DeepSeek R1 呼び出し中...")
+        print("[API] LLaMA 3.3 70B 呼び出し中...")
         article = call_api(api_key, PROMPT.format(topic=topic))
     except Exception as e:
         print(f"[FATAL] {e}")
@@ -189,7 +189,7 @@ def main():
 
     fname = f"articles/{today}_{safe}.md"
     with open(fname, "w", encoding="utf-8") as f:
-        f.write(f"---\ndate: {today}\ntopic: {topic}\nmodel: deepseek-r1\n---\n\n" + article)
+        f.write(f"---\ndate: {today}\ntopic: {topic}\nmodel: llama-3.3-70b\n---\n\n" + article)
 
     log = {
         "timestamp": datetime.datetime.now().isoformat(),
@@ -197,7 +197,7 @@ def main():
         "topic": topic,
         "file": fname,
         "chars": len(article),
-        "model": "deepseek-r1",
+        "model": "llama-3.3-70b",
         "success": True
     }
     with open("logs/execution_log.jsonl", "a", encoding="utf-8") as f:
