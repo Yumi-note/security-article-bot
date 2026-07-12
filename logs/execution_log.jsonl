@@ -21,3 +21,4 @@
 {"timestamp": "2026-07-10T00:07:50.201002", "date": "2026-07-10", "topic": "多要素認証（MFA）の種類と実装上の注意点", "file": "articles/2026-07-10_多要素認証（MFA）の種類と実.md", "chars": 2591, "model": "llama-3.1-70b", "success": true}
 {"timestamp": "2026-07-11T00:01:18.770007", "date": "2026-07-11", "topic": "PKIと電子証明書：信頼の連鎖とX.509の仕組み", "file": "articles/2026-07-11_PKIと電子証明書：信頼の連鎖.md", "chars": 3530, "model": "llama-3.1-70b", "success": true}
 {"timestamp": "2026-07-11T23:58:04.763409", "date": "2026-07-11", "topic": "情報セキュリティポリシーの策定とISMS（ISO27001）", "file": "articles/2026-07-11_情報セキュリティポリシーの策定.md", "chars": 3389, "model": "llama-3.1-70b", "success": true}
+{"timestamp": "2026-07-12T23:58:24.010216", "date": "2026-07-12", "topic": "個人情報保護法改正のポイントとGDPRとの比較", "file": "articles/2026-07-12_個人情報保護法改正のポイントと.md", "chars": 4104, "model": "llama-3.1-70b", "success": true}
